@@ -1,18 +1,19 @@
-import 'dart:math';
 import 'package:draggable_listview/listview/draggable-listview.widget.dart';
 import 'package:draggable_listview/listview/draggable-scroll-label.widget.dart';
 import 'package:draggable_listview/listview/draggable-scroll.widget.dart';
 import 'package:draggable_listview/listview/indexed_scroll_view.dart';
+import 'package:draggable_listview/page/main-page.viewmodel.dart';
 import 'package:flutter/material.dart';
 
 
 class MainPageView extends StatelessWidget {
 
-  final AutoScrollController autoScrollController =  AutoScrollController();
-  final double itemHeight = 100;
+  MainPageViewModel _viewModel;
 
   @override
   Widget build(BuildContext context) {
+    _viewModel ??= MainPageViewModel();
+
     return Scaffold(
       appBar: _getAppBar(),
       body: _getBody(),
@@ -20,30 +21,16 @@ class MainPageView extends StatelessWidget {
   }
 
   _getAppBar() {
-    return AppBar();
+    return AppBar(
+      title: Text(
+        'DraggableListView'
+      ),
+    );
   }
 
   _getBody() {
-    final List<double> randomList = [
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-      itemHeight + Random().nextInt(1000),
-    ];
-
     return DraggableScrollbar(
-        controller: autoScrollController,
+        controller: _viewModel.autoScrollController,
         thumbWidget: _getThumbWidget(),
         alwaysVisibleScrollThumb: true,
         scrollLabelBuilder: (thumbAnimation) {
@@ -56,12 +43,12 @@ class MainPageView extends StatelessWidget {
               ),
               child: DraggableScrollLabel(
                 scrollLabelItemBuilder:  (index) {
-                  final bool isSelect = index == autoScrollController.currentIndex;
+                  final bool isSelect = index == _viewModel.autoScrollController.currentIndex;
 
                   return _getScrollLabelItem(index, isSelect);
                 },
-                listLength: randomList.length,
-                autoScrollController: autoScrollController,
+                listLength: _viewModel.randomList.length,
+                autoScrollController: _viewModel.autoScrollController,
               ),
             ),
           );
@@ -69,15 +56,15 @@ class MainPageView extends StatelessWidget {
         draggableListView: DraggableListView(
           viewItemBuilder: (context, index) {
             return Container(
-              height: randomList[index],
+              height: _viewModel.randomList[index],
               alignment: Alignment.center,
               margin: EdgeInsets.all(2.0),
               color: Colors.grey,
               child: Text(index.toString()),
             );
           },
-          itemList: randomList,
-          autoScrollController: autoScrollController,
+          itemList: _viewModel.randomList,
+          autoScrollController: _viewModel.autoScrollController,
         )
     );
   }
@@ -109,7 +96,7 @@ class MainPageView extends StatelessWidget {
   _getScrollLabelItem(int index, bool isSelect) {
     return GestureDetector(
       onTap: () {
-        autoScrollController.scrollToIndex(
+        _viewModel.autoScrollController.scrollToIndex(
             index, preferPosition: AutoScrollPosition.begin);
       },
       child: Container(
