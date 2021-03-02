@@ -2,12 +2,13 @@ import 'dart:async';
 import 'package:draggable_listview/listview/draggable-listview.widget.dart';
 import 'package:draggable_listview/listview/draggable-scroll-label.widget.dart';
 import 'package:draggable_listview/listview/indexed_scroll_view.dart';
+import 'package:draggable_listview/widget/slide-fade.widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 
-typedef Widget ScrollThumbBuilder(Animation<double> thumbAnimation,);
+typedef Widget ScrollThumbBuilder(Animation<double> thumbAnimation);
 
 class DraggableScrollbar extends StatefulWidget {
 
@@ -27,8 +28,7 @@ class DraggableScrollbar extends StatefulWidget {
         assert(controller != null),
         assert(scrollLabelBuilder != null),
         assert(thumbWidget != null),
-        scrollThumbBuilder = _thumbSemicircleBuilder(
-            thumbWidget, scrollThumbKey, alwaysVisibleScrollThumb),
+        scrollThumbBuilder = _thumbSemicircleBuilder(thumbWidget, scrollThumbKey, alwaysVisibleScrollThumb),
         super(key: key);
 
   final DraggableListView draggableListView;
@@ -181,9 +181,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
   }
 
   _changePosition(ScrollNotification notification) {
-    if (_isDragInProcess) {
-      return;
-    }
+    if (_isDragInProcess) return;
 
     setState(() {
       if (notification is ScrollUpdateNotification) {
@@ -227,21 +225,8 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
     });
   }
 
-  double getBarDelta(
-      double scrollViewDelta,
-      double barMaxScrollExtent,
-      double viewMaxScrollExtent,
-      ) {
-    return scrollViewDelta * barMaxScrollExtent / viewMaxScrollExtent;
-  }
-
-  double getScrollViewDelta(
-      double barDelta,
-      double barMaxScrollExtent,
-      double viewMaxScrollExtent,
-      ) {
-    return barDelta * viewMaxScrollExtent / barMaxScrollExtent;
-  }
+  double _getScrollViewDelta(double barDelta, double barMaxScrollExtent, double viewMaxScrollExtent,) =>
+      barDelta * viewMaxScrollExtent / barMaxScrollExtent;
 
   _onVerticalDragStart(DragStartDetails details) {
     setState(() {
@@ -278,7 +263,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
           _barOffset = barMaxScrollExtent;
         }
 
-        double viewDelta = getScrollViewDelta(
+        double viewDelta = _getScrollViewDelta(
             dy, barMaxScrollExtent, viewMaxScrollExtent);
 
         double newScrollDelta = (viewDelta / viewMaxScrollExtent)
@@ -293,29 +278,12 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
           _viewOffset = widget.controller.position.maxScrollExtent;
         }
 
-//        print('oviewoffset ${_viewOffset} '
-//            'viewOffset ${_viewOffset + barMaxScrollExtent} '
-//            'viewmax ${viewMaxScrollExtent - widget.thumbWidget.preferredSize.height} '
-//            ' max ${widget.controller.position.maxScrollExtent + barMaxScrollExtent}');
-//
-//        final vof = _viewOffset;
-//        final wmx = viewMaxScrollExtent - widget.thumbWidget.preferredSize.height - barMaxScrollExtent;
-//        final omax = widget.controller.position.maxScrollExtent;
-//
-//        final double ssf = wmx / omax;
-//        final tmp =  vof * ssf;
-//
-//        print('tmp $tmp}');
-//        print('');
-
-
         if(cIdx == 0) {
           widget.controller.jumpTo(_viewOffset);
           widget.controller.offsetToIndex(_viewOffset + widget.thumbWidget.preferredSize.height / 2, _barOffset);
           completer.complete();
-        }
-        else{
-          widget.controller.animateTo(_viewOffset, duration: Duration(milliseconds: (100 / cIdx).ceil()), curve: Curves.ease).then((_){
+        } else {
+          widget.controller.animateTo(_viewOffset, duration: Duration(milliseconds: (100 / cIdx).ceil()), curve: Curves.ease).then((_) {
             widget.controller.offsetToIndex(_viewOffset + widget.thumbWidget.preferredSize.height / 2,  _barOffset);
             completer.complete();
           });
@@ -327,8 +295,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
   }
 
   _onVerticalDragEnd(DragEndDetails details) async {
-    if(details == null)
-      return;
+    if(details == null) return;
 
     final DateTime dragFinishDateTime = DateTime.now();
     final velocity  = ((_barOffset - _tmpBarOffset) / ((dragFinishDateTime.millisecondsSinceEpoch - _dragStartDateTime.millisecondsSinceEpoch))).abs();
@@ -343,7 +310,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
     _hideIndexList();
   }
 
-  Future _hideIndexList() {
+  _hideIndexList() {
     _isDragInProcess = false;
     _fadeoutTimer?.cancel();
     _fadeoutTimer = Timer(widget.scrollbarTimeToFade, () {
@@ -359,108 +326,4 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
   double get viewMaxScrollExtent => widget.controller.maxScrollExtent();
 
   double get viewMinScrollExtent => widget.controller.position.minScrollExtent;
-}
-
-class ArrowCustomPainter extends CustomPainter {
-  Color color;
-
-  ArrowCustomPainter(this.color);
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    const width = 12.0;
-    const height = 8.0;
-    final baseX = size.width / 2;
-    final baseY = size.height / 2;
-
-    canvas.drawPath(
-      _trianglePath(Offset(baseX, baseY - 2.0), width, height, true),
-      paint,
-    );
-    canvas.drawPath(
-      _trianglePath(Offset(baseX, baseY + 2.0), width, height, false),
-      paint,
-    );
-  }
-
-  static Path _trianglePath(Offset o, double width, double height, bool isUp) {
-    return Path()
-      ..moveTo(o.dx, o.dy)
-      ..lineTo(o.dx + width, o.dy)
-      ..lineTo(o.dx + (width / 2), isUp ? o.dy - height : o.dy + height)
-      ..close();
-  }
-}
-
-///This cut 2 lines in arrow shape
-class ArrowClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-    path.lineTo(0.0, size.height);
-    path.lineTo(size.width, size.height);
-    path.lineTo(size.width, 0.0);
-    path.lineTo(0.0, 0.0);
-    path.close();
-
-    double arrowWidth = 8.0;
-    double startPointX = (size.width - arrowWidth) / 2;
-    double startPointY = size.height / 2 - arrowWidth / 2;
-    path.moveTo(startPointX, startPointY);
-    path.lineTo(startPointX + arrowWidth / 2, startPointY - arrowWidth / 2);
-    path.lineTo(startPointX + arrowWidth, startPointY);
-    path.lineTo(startPointX + arrowWidth, startPointY + 1.0);
-    path.lineTo(
-        startPointX + arrowWidth / 2, startPointY - arrowWidth / 2 + 1.0);
-    path.lineTo(startPointX, startPointY + 1.0);
-    path.close();
-
-    startPointY = size.height / 2 + arrowWidth / 2;
-    path.moveTo(startPointX + arrowWidth, startPointY);
-    path.lineTo(startPointX + arrowWidth / 2, startPointY + arrowWidth / 2);
-    path.lineTo(startPointX, startPointY);
-    path.lineTo(startPointX, startPointY - 1.0);
-    path.lineTo(
-        startPointX + arrowWidth / 2, startPointY + arrowWidth / 2 - 1.0);
-    path.lineTo(startPointX + arrowWidth, startPointY - 1.0);
-    path.close();
-
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-class SlideFadeTransition extends StatelessWidget {
-  final Animation<double> animation;
-  final Widget child;
-
-  const SlideFadeTransition({
-    Key key,
-    @required this.animation,
-    @required this.child,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) => animation.value == 0.0 ? Container() : child,
-      child: SlideTransition(
-        position: Tween(
-          begin: Offset(0.3, 0.0),
-          end: Offset(0.0, 0.0),
-        ).animate(animation),
-        child: FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-      ),
-    );
-  }
 }

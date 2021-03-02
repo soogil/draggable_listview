@@ -511,18 +511,12 @@ class AutoScrollTagState<W extends AutoScrollTag> extends State<W> with TickerPr
   }
 
   void register(int index) {
-    // the caller in initState() or dispose() is not in the order of first dispose and init
-    // so we can't assert there isn't a existing key
-    // assert(!widget.controller.tagMap.keys.contains(index));
     widget.controller.tagMap[index] = this;
   }
 
   void unregister(int index) {
     _cancelController();
     _highlights.remove(this);
-    // the caller in initState() or dispose() is not in the order of first dispose and init
-    // so we can't assert there isn't a existing key
-    // assert(widget.controller.tagMap.keys.contains(index));
     if (widget.controller.tagMap[index] == this)
       widget.controller.tagMap.remove(index);
   }

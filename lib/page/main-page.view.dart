@@ -1,8 +1,10 @@
 import 'package:draggable_listview/listview/draggable-listview.widget.dart';
 import 'package:draggable_listview/listview/draggable-scroll-label.widget.dart';
-import 'package:draggable_listview/listview/draggable-scroll.widget.dart';
+import 'package:draggable_listview/widget/draggable-scroll.widget.dart';
 import 'package:draggable_listview/listview/indexed_scroll_view.dart';
+import 'package:draggable_listview/listview/painter/arrow-painter.dart';
 import 'package:draggable_listview/page/main-page.viewmodel.dart';
+import 'package:draggable_listview/widget/slide-fade.widget.dart';
 import 'package:flutter/material.dart';
 
 
@@ -54,7 +56,7 @@ class MainPageView extends StatelessWidget {
           );
         },
         draggableListView: DraggableListView(
-          viewItemBuilder: (context, index) {
+          listItemBuilder: (context, index) {
             return Container(
               height: _viewModel.randomList[index],
               alignment: Alignment.center,
@@ -75,7 +77,7 @@ class MainPageView extends StatelessWidget {
     return PreferredSize(
       preferredSize: Size(thumbHeight * 0.6, thumbHeight),
       child: CustomPaint(
-        foregroundPainter: ArrowCustomPainter(Colors.grey),
+        foregroundPainter: ArrowPainter(Colors.grey),
         child: Material(
           elevation: 10.0,
           color: Colors.white,

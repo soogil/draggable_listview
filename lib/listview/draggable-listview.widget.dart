@@ -2,20 +2,20 @@ import 'package:draggable_listview/listview/indexed_scroll_view.dart';
 import 'package:flutter/material.dart';
 
 
-typedef Widget AnalysisViewBuilder(BuildContext context, int index,);
+typedef Widget ListItemBuilder(BuildContext context, int index,);
 
 class DraggableListView extends BoxScrollView {
 
   const DraggableListView({
     this.autoScrollController,
     this.itemList,
-    this.viewItemBuilder,
+    this.listItemBuilder,
   }) : assert(autoScrollController != null),
         assert(itemList != null && itemList.length != 0);
 
   final AutoScrollController autoScrollController;
   final List<double> itemList;
-  final AnalysisViewBuilder viewItemBuilder;
+  final ListItemBuilder listItemBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -24,18 +24,18 @@ class DraggableListView extends BoxScrollView {
           controller: autoScrollController,
           itemCount: itemList.length,
           itemBuilder: (context, index) {
-            return _getScreen(context, index);
+            return _getItem(context, index);
           },
         )
     );
   }
 
-  _getScreen(BuildContext context, int index,) {
+  _getItem(BuildContext context, int index,) {
     return AutoScrollTag(
       key: ValueKey(index),
       controller: autoScrollController,
       index: index,
-      child: viewItemBuilder(
+      child: listItemBuilder(
         context,
         index,
       ),
@@ -46,6 +46,4 @@ class DraggableListView extends BoxScrollView {
   Widget buildChildLayout(BuildContext context) {
     return null;
   }
-
-  int get screenCount => itemList.length;
 }

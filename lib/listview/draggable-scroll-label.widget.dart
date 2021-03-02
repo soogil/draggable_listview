@@ -1,5 +1,5 @@
-import 'package:draggable_listview/listview/indexed_scroll_view.dart';
 import 'package:flutter/material.dart';
+import 'package:draggable_listview/listview/indexed_scroll_view.dart';
 
 
 typedef Widget ScrollLabelBuilder(Animation<double> thumbAnimation);
@@ -8,13 +8,13 @@ typedef Widget ScrollLabelItemBuilder(int currentIndex);
 
 class DraggableScrollLabel extends StatefulWidget {
 
-  DraggableScrollLabel({
+  const DraggableScrollLabel({
     Key key,
     this.autoScrollController,
     this.listLength,
     this.scrollLabelItemBuilder,
     this.width = 72,
-    this.rightPadding = 12,
+    this.rightPadding = 15,
   }) : assert(listLength != 0),
         assert(autoScrollController != null),
         assert(scrollLabelItemBuilder != null);
@@ -38,15 +38,12 @@ class DraggableScrollLabelState extends State<DraggableScrollLabel> {
     _controller = ScrollController();
 
     widget.autoScrollController.addListener((){
-      if(!_controller.hasClients)
-        return;
+      if(!_controller.hasClients) return;
 
       _moveScroll();
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_){
-      _moveScroll();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _moveScroll());
 
     super.initState();
   }
@@ -58,16 +55,8 @@ class DraggableScrollLabelState extends State<DraggableScrollLabel> {
   }
 
   @override
-  void didUpdateWidget(DraggableScrollLabel oldWidget) {
-    // TODO: implement didUpdateWidget
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final scrollLabels = List<Widget>.generate(widget.listLength, (index) {
-      return _getScrollLabelItem(index);
-    });
+    final scrollLabels = List<Widget>.generate(widget.listLength, (index) => _getScrollLabelItem(index));
 
     return Container(
         width: widget.width,
@@ -80,13 +69,9 @@ class DraggableScrollLabelState extends State<DraggableScrollLabel> {
     );
   }
 
-  _getScrollLabelItem(int index) {
-    return widget.scrollLabelItemBuilder(index);
-  }
-
+  Widget _getScrollLabelItem(int index) => widget.scrollLabelItemBuilder(index);
 
   int get _parentScrollIndex => widget.autoScrollController.currentIndex;
 
   double get _presumeOffset => _controller.position.maxScrollExtent / widget.listLength;
-
 }
